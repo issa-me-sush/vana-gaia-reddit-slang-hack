@@ -53,6 +53,7 @@ export default function Home() {
 
       const data: APIResponse = await response.json();
       if (data.choices?.[0]?.message) {
+        // @ts-ignore 
         setMessages(prev => [...prev, data.choices[0].message]);
       }
     } catch (error) {
