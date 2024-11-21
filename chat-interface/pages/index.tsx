@@ -3,7 +3,13 @@ import Head from 'next/head';
 
 type Message = {
   content: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
+};
+
+type APIResponse = {
+  choices?: [{
+    message: Message;
+  }];
 };
 
 export default function Home() {
@@ -24,7 +30,7 @@ export default function Home() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -38,20 +44,24 @@ export default function Home() {
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: 'You are a helpful assistant.' },
+            { role: 'system', content: 'You are a helpful assistant.' } as Message,
             ...messages,
             userMessage
           ]
         }),
       });
 
-      const data = await response.json();
-      if (data.choices && data.choices[0]?.message) {
+      const data: APIResponse = await response.json();
+      if (data.choices?.[0]?.message) {
         setMessages(prev => [...prev, data.choices[0].message]);
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
+      const errorMessage: Message = { 
+        role: 'assistant', 
+        content: 'Sorry, something went wrong. Please try again.' 
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
